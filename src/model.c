@@ -1129,7 +1129,13 @@ static void forward_token_gpu(Context *c, int token, float *all_logits) {
         const int any = cpu_experts_one(c, L, sel, slot, w, c->out);
         gpu_dense_moe_finish(g, l, any ? c->out : NULL);
     }
-    gpu_dense_logits(g, c->logits);
+    if (!gpu_dense_logits(g, c->logits)) {
+        /* The token's KV/recurrent state lives on the failed GPU path.
+         * lost_state() will reset the context and make ctx_forward return NULL. */
+        c->gpu_dense = 0;
+        c->gpu_lost = 1;
+        return;
+    }
     if (all_logits) memcpy(all_logits, c->logits, sizeof(float) * (size_t)m->n_vocab);
     c->pos++;
     c->tok_counter++;
@@ -1241,8 +1247,8 @@ float *ctx_forward(Context *c, const int *tokens, int n) {
         double t0 = time_sec();
         forward_chunk(c, tokens + i, nb, i + nb == n, NULL);
         c->stats.t_forward += time_sec() - t0;
-        if (c->gpu) gpu_rebalance(c->gpu, nb == 1 ? 2 : 16);
         if (lost_state(c)) return NULL;
+        if (c->gpu) gpu_rebalance(c->gpu, nb == 1 ? 2 : 16);
     }
     return c->logits;
 }
