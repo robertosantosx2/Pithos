@@ -55,7 +55,7 @@ int  gpu_dense_on(const Gpu *g);
 void gpu_dense_begin(Gpu *g, const float *x, const float *rope_cs, const float *rope_swa, int pos);
 void gpu_dense_wait(Gpu *g, int layer, const float **x, const float **h, const int **ret);
 void gpu_dense_moe_finish(Gpu *g, int layer, const float *ycpu);
-void gpu_dense_logits(Gpu *g, float *out);
+int gpu_dense_logits(Gpu *g, float *out);
 /* copy KV rows [r0, r1) of every attention layer ([n_attn][n_ctx][kvd] f16 layout) and the
  * convolution state between the host copy and VRAM */
 void gpu_dense_kv(Gpu *g, uint16_t *kc, uint16_t *vc, int r0, int r1, int to_gpu);
