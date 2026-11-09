@@ -1532,15 +1532,35 @@ static void dense_mv1(Gpu *g, const DT *w, cl_mem x, const DT *norm, cl_mem y, i
     dense_mv(g, 1, &w, &y0, x, norm, y, accumulate);
 }
 
-static void wait_event(Gpu *g, cl_event ev) {
+static int wait_event(Gpu *g, cl_event ev) {
     /* spin on the status: a blocking wait sleeps in the driver and wakes up late */
+    if (!ev) {
+        if (!g->reported) {
+            fprintf(stderr, "GPU: missing OpenCL event in wait_event\n");
+            g->reported = 1;
+        }
+        return 0;
+    }
     double t0 = time_sec();
     for (;;) {
         cl_int st = 1;
-        if (g->cl.GetEventInfo(ev, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(st), &st, NULL) != 0 || st <= 0) break;
+        cl_int e = g->cl.GetEventInfo(ev, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(st), &st, NULL);
+        if (e != 0) {
+            check(g, e, "query event status");
+            return 0;
+        }
+        if (st == 0) break; /* CL_COMPLETE */
+        if (st < 0) {
+            if (!g->reported) {
+                fprintf(stderr, "GPU: OpenCL command completed with status %d\n", st);
+                g->reported = 1;
+            }
+            return 0;
+        }
         cpu_relax();
     }
     g->st.t_wait += time_sec() - t0;
+    return !g->reported;
 }
 
 static void dense_enqueue_upto(Gpu *g, int upto);
@@ -1800,12 +1820,17 @@ void gpu_dense_moe_finish(Gpu *g, int l, const float *ycpu) {
     dense_enqueue_upto(g, next_moe(g->m, l) + 1 + g->lookahead);
 }
 
-void gpu_dense_logits(Gpu *g, float *out) {
+int gpu_dense_logits(Gpu *g, float *out) {
     dense_enqueue_upto(g, g->m->n_layer);
-    wait_event(g, g->ev_logits);
-    g->cl.ReleaseEvent(g->ev_logits);
-    g->ev_logits = NULL;
+    int ok = wait_event(g, g->ev_logits);
+    if (g->ev_logits) {
+        cl_int e = g->cl.ReleaseEvent(g->ev_logits);
+        g->ev_logits = NULL;
+        check(g, e, "release logits event");
+    }
+    if (!ok || g->reported) return 0;
     memcpy(out, g->h_logits, sizeof(float) * (size_t)g->m->n_vocab);
+    return 1;
 }
 
 void gpu_dense_finish(Gpu *g) { check(g, g->cl.Finish(g->q), "finish"); }
