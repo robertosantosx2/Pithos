@@ -1034,6 +1034,10 @@ static int real_main(int argc, char **argv) {
             tb = time_sec();
             for (int i = 0; i < ntg; i++) {
                 float *lg = ctx_forward(ctx, &tok, 1);
+                if (!lg) {
+                    fprintf(stderr, "benchmark generation stopped: context lost\n");
+                    break;
+                }
                 int best = 0;
                 for (int v = 1; v < m.n_vocab; v++) if (lg[v] > lg[best]) best = v;
                 tok = best;
