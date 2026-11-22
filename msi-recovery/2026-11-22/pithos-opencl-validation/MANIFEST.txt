@@ -1,0 +1,20 @@
+Pithos MSI recovery snapshot
+Date: 2026-11-22
+Original path: /home/ssantos/Pithos-opencl-validation-20261109
+Branch: validation/intel-opencl-dense-logits
+Base: 0a05458599d3bc3a7bd470ae28b59aa457b79b90
+HEAD: c658925830cf883cce9b2118526a6e90cd49eebe
+Fork: https://github.com/robertosantosx2/Pithos.git
+Upstream origin in original repo: https://github.com/benmaster82/Pithos.git
+Local commits after origin/main: 4
+Staged changes:
+Unstaged changes:
+ 2 files changed, 66 insertions(+), 27 deletions(-)
+Untracked files:
+SHA256:
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  /home/ssantos/pithos-msi-recovery-2026-11-22/staged.patch
+bd9be11f082ee13832380d48cb2b12ec498502a87ed92493ac88ada19b3a682d  /home/ssantos/pithos-msi-recovery-2026-11-22/unstaged.patch
+a575e0e3642ba817983dfb9b01ce60eb2c2471d3f7f6d2f670ed7e53f05a7212  /home/ssantos/pithos-msi-recovery-2026-11-22/local-commits.txt
+25df51450e15908665637117af631e8bf5fa6ba1f2a071c25eed0cecef92ca4c  /home/ssantos/pithos-msi-recovery-2026-11-22/MANIFEST.txt
+ce4cf373e7ac971e60c40729c130884c4a6bd28d5caf144c45e351b38642606d  /home/ssantos/pithos-msi-recovery-2026-11-22/status.txt
+de4e5dee7e3468c33edd65c8cf981b4d096768512fac75f0e74ee21f29a4b0a4  /home/ssantos/pithos-msi-recovery-2026-11-22/unstaged-stat.txt

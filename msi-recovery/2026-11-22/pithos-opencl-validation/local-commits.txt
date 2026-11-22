@@ -1,0 +1,4 @@
+c658925 bench: stop token loop when context is lost
+ecaeaff model: reset context when dense OpenCL logits fail
+15560ac opencl: fail closed on dense logits readback errors
+2d7c871 gpu: return status from dense logits API
